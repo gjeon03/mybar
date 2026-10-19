@@ -166,7 +166,7 @@ final class ItemActivator {
     pending = saved
 
     beforePress()
-    let pressed = press(item, secondary: secondary)
+    let pressed = await press(item, secondary: secondary)
     watch.lap("pressed")
     // The menu is open: give the person their mouse back, and lift the cover
     // once the menu bar has settled.
@@ -308,10 +308,10 @@ final class ItemActivator {
     return NSWorkspace.shared.runningApplications.contains { $0.bundleIdentifier == bundle }
   }
 
-  private func press(_ item: MenuBarItem, secondary: Bool) -> Bool {
+  private func press(_ item: MenuBarItem, secondary: Bool) async -> Bool {
     let center = CGPoint(x: item.frame.midX, y: item.frame.midY)
     if !secondary, item.window.isOnScreen, ItemMover.isReachable(item.frame) {
-      EventDriver.click(at: center)
+      await EventDriver.clickAsync(at: center)
       return true
     }
     if let element = MenuBarScanner.element(for: item) {

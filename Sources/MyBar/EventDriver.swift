@@ -82,6 +82,15 @@ enum EventDriver {
     warpBack(to: saved)
   }
 
+  /// Runs `click` off the main thread. The input shield's event tap lives on
+  /// the main run loop and MyBar's own events pass through it: a click made on
+  /// the main thread starves it, so the events only come out after the pointer
+  /// was put back and pull it to the menu bar item again, where it stays until
+  /// the person moves the mouse.
+  static func clickAsync(at point: CGPoint) async {
+    await Task.detached(priority: .userInitiated) { click(at: point) }.value
+  }
+
   static func click(at point: CGPoint) {
     beginDriving()
     defer { endDriving() }
