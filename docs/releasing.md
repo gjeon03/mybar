@@ -11,13 +11,31 @@
    xcrun notarytool store-credentials mybar --apple-id <Apple ID> --team-id <팀 ID> --password <앱 암호>
    ```
 
+## 첫 공개 릴리스(1.4.0) 전에: macOS 26 확인
+
+1.4.0은 한 앱으로 26과 27을 모두 지원한다(`MenuBarSystem.usesAgent`로 경로 선택). 27 경로는 1.3.x에서
+검증됐지만, 26 경로는 **1.0.2 이후 26에서 실행해 본 적이 없다**. 개인 Mac(macOS 26)에서 확인한다.
+26 경로의 원리와 함정은 macos26.md, 실사용 테스트 도구는 development.md.
+
+1. `scripts/install.sh` → 권한 두 개 허용(손쉬운 사용, 화면 기록). 1.0.2를 쓰던 Mac이면 1.0.2 설정이
+   넘어오는지(Layout 탭의 구역 배치·그룹) 확인.
+2. 구분선 두 개(Hidden, Always Hidden)가 메뉴바에 생기고 접으면 왼쪽 아이템이 사라지는지.
+3. 설정 Layout 탭에서 아이템을 Visible ↔ Hidden ↔ Always Hidden으로 옮기기, ⌘-드래그로 옮기기.
+4. MyBar 아이콘 클릭 → 바에 숨긴 아이템 그림 → 하나 클릭 → 그 아이템만 메뉴바에 와서 열리고, 닫은 뒤
+   몇 초 후 제자리로. `tools/cycle 10 300`으로 연속 실행(→ development.md).
+5. 노치 화면이면 노치 뒤 아이템 열기(슬라이딩), 외부 모니터가 있으면 양쪽에서.
+6. 그룹 아이콘, ⌥⌘B, 아이콘 스타일 변경, Permissions 탭(경고·Reset 버튼).
+7. 종료하면 모든 아이템이 돌아오는지.
+
+문제가 있으면 고치고, 통과하면 README의 Requirements(“macOS 26 … last tested in 1.0.2”)를 고친 뒤 릴리스.
+
 ## 릴리스
 
 ```bash
 # 1. Resources/Info.plist의 CFBundleShortVersionString, CFBundleVersion 올리기
 swift format lint -r Sources Tests && swift test
 MYBAR_NOTARY_PROFILE=mybar scripts/package.sh build   # 유니버설 앱 → 서명 → DMG → 공증 → 스테이플
-gh release create v<버전> build/MyBar-<버전>.dmg --title "MyBar <버전>" --notes "…"
+gh release create v<버전> build/MyBar-<버전>.dmg --title "MyBar <버전>" --notes-file <노트 파일>
 ```
 
 - `scripts/signing.sh`가 서명 인증서를 고른다: `MYBAR_SIGN_IDENTITY` → 키체인의 Developer ID
@@ -60,3 +78,10 @@ gh release create v<버전> build/MyBar-<버전>.dmg --title "MyBar <버전>" --
 1.3.x까지는 `dev.mybar.MyBar`였다. macOS는 번들 ID별로 설정을 따로 두므로, 새 ID로 처음 실행할 때
 예전 설정(숨김 배치·그룹·아이콘 등)을 그대로 가져온다(`PreviousIdentity.importSettings`, main.swift).
 권한은 새 앱 기준이라 한 번 다시 허용해야 한다.
+
+1.4.0 릴리스 노트에 넣을 것(1.3.x에서 올라오는 사람용):
+
+- 권한을 한 번 다시 허용해야 한다(번들 ID·서명 변경). 예전 MyBar 권한 항목은 자동으로 지운다.
+- 메뉴바의 MyBar 아이콘이 맨 왼쪽에 생길 수 있다 → ⌘-드래그로 원하는 곳에 한 번 옮기면 기억한다
+  (macOS 27은 예전 위치 값을 새 ID에 적용하지 않음).
+- 설정(숨김 배치·그룹·아이콘)은 자동으로 넘어온다.
