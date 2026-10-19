@@ -1,13 +1,44 @@
-// Renders Resources/AppIcon.icns: a deep indigo tile with a frosted menu bar
-// across the top and MyBar's bar dropping down from its chevron, revealing
-// the hidden apps. Drawn on Apple's 1024 pt icon grid (824 pt tile).
-// Usage: swift scripts/make-icon.swift
+// Renders Resources/AppIcon.icns: a tile with a frosted menu bar across the
+// top and MyBar's bar dropping down from its chevron, revealing the hidden
+// apps. Drawn on Apple's 1024 pt icon grid (824 pt tile).
+// Usage: swift scripts/make-icon.swift [theme]   (themes: laver, rice, indigo)
+// With MYBAR_ICON_PREVIEW=<path>, only writes a 1024 px preview there.
 import AppKit
 
 let root = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
 let iconset = root.appendingPathComponent("build/AppIcon.iconset")
 try? FileManager.default.removeItem(at: iconset)
 try FileManager.default.createDirectory(at: iconset, withIntermediateDirectories: true)
+
+/// The icon's colours. The website shares the gimbap palette (laver, rice,
+/// carrot, egg, spinach).
+struct Theme {
+  var tileBase: UInt32
+  var tile: [UInt32]  // gradient, top to bottom
+  var glow: UInt32
+  var panel: (UInt32, UInt32)  // gradient, top to bottom
+  var panelShadow: UInt32
+  var chips: [(UInt32, UInt32)]
+  var barGlyph: UInt32 = 0xFFFFFF
+}
+
+let themes: [String: Theme] = [
+  "laver": Theme(
+    tileBase: 0x14241D, tile: [0x3A6654, 0x1F382D, 0x0F1C16], glow: 0x9FE3B8,
+    panel: (0xFFFDF7, 0xF3EBDA), panelShadow: 0x07110C,
+    chips: [(0xFFA15C, 0xEA6A2A), (0xFFE07A, 0xF2B632), (0x8FD57A, 0x3E9B4F), (0xFF9DB4, 0xE0577F)]),
+  "rice": Theme(
+    tileBase: 0xEFE6D2, tile: [0xFFFBF1, 0xF6EEDC, 0xE9DDC2], glow: 0xF6C445,
+    panel: (0x2C4A3D, 0x1B3027), panelShadow: 0x5A4A2A,
+    chips: [(0xFFA15C, 0xEA6A2A), (0xFFE07A, 0xF2B632), (0x8FD57A, 0x3E9B4F), (0xFF9DB4, 0xE0577F)],
+    barGlyph: 0x1B3027),
+  "indigo": Theme(
+    tileBase: 0x1B1E4B, tile: [0x4A4FE0, 0x2A2C8C, 0x121436], glow: 0x8A7CFF,
+    panel: (0xFFFFFF, 0xE6E4FB), panelShadow: 0x05061A,
+    chips: [(0xFFB347, 0xFF6A3D), (0x4FE3C1, 0x1FA2C9), (0xFF7EB3, 0xD6457F), (0x9BE15D, 0x38B26B)]),
+]
+let themeName = CommandLine.arguments.dropFirst().first ?? "laver"
+let theme = themes[themeName] ?? themes["laver"]!
 
 func color(_ hex: UInt32, _ alpha: CGFloat = 1) -> NSColor {
   NSColor(
@@ -61,36 +92,36 @@ func drawIcon() {
 
   // Tile with its drop shadow.
   withShadow(color: color(0x000000, 0.35), blur: 28, offsetY: -12) {
-    color(0x1B1E4B).setFill()
+    color(theme.tileBase).setFill()
     tilePath.fill()
   }
   NSGraphicsContext.saveGraphicsState()
   tilePath.addClip()
-  NSGradient(colors: [color(0x4A4FE0), color(0x2A2C8C), color(0x121436)], atLocations: [0, 0.5, 1], colorSpace: .sRGB)!
+  NSGradient(colors: theme.tile.map { color($0) }, atLocations: [0, 0.5, 1], colorSpace: .sRGB)!
     .draw(in: tile, angle: -70)
   // A soft glow behind the drop-down bar.
-  NSGradient(colors: [color(0x8A7CFF, 0.55), color(0x8A7CFF, 0)])!
+  NSGradient(colors: [color(theme.glow, 0.5), color(theme.glow, 0)])!
     .draw(fromCenter: NSPoint(x: 560, y: 470), radius: 0, toCenter: NSPoint(x: 560, y: 470), radius: 440, options: [])
 
   // Frosted menu bar across the top.
   let bar = NSRect(x: tile.minX, y: tile.maxY - 150, width: tile.width, height: 150)
-  color(0xFFFFFF, 0.14).setFill()
+  color(theme.barGlyph, 0.12).setFill()
   bar.fill()
-  color(0xFFFFFF, 0.22).setFill()
+  color(theme.barGlyph, 0.2).setFill()
   NSRect(x: bar.minX, y: bar.minY, width: bar.width, height: 3).fill()
 
   // Status items on the bar: a few simple glyphs, then MyBar's chevron.
   let glyphY = bar.midY
-  color(0xFFFFFF, 0.55).setFill()
+  color(theme.barGlyph, 0.55).setFill()
   NSBezierPath(ovalIn: NSRect(x: 214, y: glyphY - 19, width: 38, height: 38)).fill()
   NSBezierPath(roundedRect: NSRect(x: 290, y: glyphY - 18, width: 44, height: 36), xRadius: 10, yRadius: 10).fill()
   NSBezierPath(roundedRect: NSRect(x: 372, y: glyphY - 14, width: 70, height: 28), xRadius: 14, yRadius: 14).fill()
-  color(0xFFFFFF, 0.9).setFill()
+  color(theme.barGlyph, 0.9).setFill()
   NSBezierPath(roundedRect: NSRect(x: 760, y: glyphY - 13, width: 82, height: 26), xRadius: 13, yRadius: 13).fill()
 
   // MyBar's chevron, highlighted as if just clicked.
   let chevronCenter = NSPoint(x: 600, y: glyphY)
-  color(0xFFFFFF, 0.24).setFill()
+  color(theme.barGlyph, 0.22).setFill()
   NSBezierPath(
     roundedRect: NSRect(x: chevronCenter.x - 50, y: chevronCenter.y - 50, width: 100, height: 100), xRadius: 26,
     yRadius: 26
@@ -102,19 +133,19 @@ func drawIcon() {
   chevron.lineWidth = 13
   chevron.lineCapStyle = .round
   chevron.lineJoinStyle = .round
-  NSColor.white.setStroke()
+  color(theme.barGlyph).setStroke()
   chevron.stroke()
 
   // The drop-down bar holding the revealed apps.
   let panel = NSRect(x: 192, y: 330, width: 640, height: 268)
   let panelPath = squircle(panel, radius: 62)
-  withShadow(color: color(0x05061A, 0.55), blur: 40, offsetY: -16) {
-    color(0xF4F3FF).setFill()
+  withShadow(color: color(theme.panelShadow, 0.5), blur: 40, offsetY: -16) {
+    color(theme.panel.1).setFill()
     panelPath.fill()
   }
   NSGraphicsContext.saveGraphicsState()
   panelPath.addClip()
-  NSGradient(colors: [color(0xFFFFFF), color(0xE6E4FB)])!.draw(in: panel, angle: -90)
+  NSGradient(colors: [color(theme.panel.0), color(theme.panel.1)])!.draw(in: panel, angle: -90)
   NSGraphicsContext.restoreGraphicsState()
   // Pointer from the panel up to the chevron.
   let caret = NSBezierPath()
@@ -122,11 +153,11 @@ func drawIcon() {
   caret.line(to: NSPoint(x: chevronCenter.x, y: panel.maxY + 30))
   caret.line(to: NSPoint(x: chevronCenter.x + 30, y: panel.maxY - 2))
   caret.close()
-  color(0xFFFFFF).setFill()
+  color(theme.panel.0).setFill()
   caret.fill()
 
   // App chips inside the bar.
-  let chips: [(UInt32, UInt32)] = [(0xFFB347, 0xFF6A3D), (0x4FE3C1, 0x1FA2C9), (0xFF7EB3, 0xD6457F), (0x9BE15D, 0x38B26B)]
+  let chips = theme.chips
   let chipSize: CGFloat = 122
   let gap = (panel.width - chipSize * CGFloat(chips.count)) / CGFloat(chips.count + 1)
   for (index, chip) in chips.enumerated() {
@@ -134,7 +165,7 @@ func drawIcon() {
       x: panel.minX + gap + CGFloat(index) * (chipSize + gap), y: panel.midY - chipSize / 2, width: chipSize,
       height: chipSize)
     let path = squircle(rect, radius: 30)
-    withShadow(color: color(0x1B1E4B, 0.25), blur: 10, offsetY: -4) {
+    withShadow(color: color(theme.tileBase, 0.25), blur: 10, offsetY: -4) {
       color(chip.1).setFill()
       path.fill()
     }
@@ -183,6 +214,11 @@ func render(_ pixels: Int) -> Data {
   drawIcon()
   NSGraphicsContext.restoreGraphicsState()
   return rep.representation(using: .png, properties: [:])!
+}
+
+if let preview = ProcessInfo.processInfo.environment["MYBAR_ICON_PREVIEW"] {
+  try render(1024).write(to: URL(fileURLWithPath: preview))
+  exit(0)
 }
 
 for base in [16, 32, 128, 256, 512] {
