@@ -22,7 +22,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 }
 
 /// MyBar was once identified as `dev.mybar.MyBar`; macOS keeps each identity's
-/// settings apart, so bring them over the first time this one runs.
+/// settings apart, so bring them over the first time this one runs, and clear
+/// the old identity's entries from Privacy & Security, which would otherwise
+/// linger there as a second "MyBar".
 @MainActor
 enum PreviousIdentity {
   static let bundleID = "dev.mybar.MyBar"
@@ -32,11 +34,23 @@ enum PreviousIdentity {
     let defaults = UserDefaults.standard
     guard !defaults.bool(forKey: importedKey) else { return }
     defaults.set(true, forKey: importedKey)
+    forgetPermissions()
     guard defaults.object(forKey: AppModel.settingsKey) == nil,
       let previous = defaults.persistentDomain(forName: bundleID)
     else { return }
     for (key, value) in previous {
       defaults.set(value, forKey: key)
+    }
+  }
+
+  private static func forgetPermissions() {
+    for service in ["Accessibility", "ScreenCapture"] {
+      let reset = Process()
+      reset.executableURL = URL(fileURLWithPath: "/usr/bin/tccutil")
+      reset.arguments = ["reset", service, bundleID]
+      reset.standardOutput = FileHandle.nullDevice
+      reset.standardError = FileHandle.nullDevice
+      try? reset.run()
     }
   }
 }
