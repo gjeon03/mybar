@@ -14,12 +14,18 @@ stage="build/dmg"
 app="$stage/MyBar.app"
 dmg="$out/MyBar-$version.dmg"
 
-swift build -c release --arch arm64 --arch x86_64
-bin=".build/apple/Products/Release/MyBar"
+# One build per architecture, merged with lipo: a single `--arch arm64 --arch x86_64`
+# build goes through Xcode's build system, which rejects the app target's Swift 5
+# language mode ("given: [5], supported: []") with Xcode 16.3.
+for arch in arm64 x86_64; do
+  swift build -c release --arch "$arch"
+done
 
 rm -rf "$stage"
 mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources" "$out"
-cp "$bin" "$app/Contents/MacOS/MyBar"
+lipo -create -output "$app/Contents/MacOS/MyBar" \
+  "$(swift build -c release --arch arm64 --show-bin-path)/MyBar" \
+  "$(swift build -c release --arch x86_64 --show-bin-path)/MyBar"
 cp Resources/Info.plist "$app/Contents/Info.plist"
 cp Resources/AppIcon.icns "$app/Contents/Resources/AppIcon.icns"
 source scripts/signing.sh
