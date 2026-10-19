@@ -23,7 +23,7 @@ groups behind a single icon.
 ## Requirements
 
 - **macOS 27 (Golden Gate)** — tested on 27.0.1.
-- **macOS 26 (Tahoe)** — uses the earlier divider-based engine (see below), last tested in 1.0.2.
+- **macOS 26 (Tahoe)** — uses the earlier divider-based engine (see below), tested on 26.6.2.
 - Apple silicon or Intel.
 
 ## Install
