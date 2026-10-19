@@ -16,16 +16,19 @@ dmg="$out/MyBar-$version.dmg"
 
 # One build per architecture, merged with lipo: a single `--arch arm64 --arch x86_64`
 # build goes through Xcode's build system, which rejects the app target's Swift 5
-# language mode ("given: [5], supported: []") with Xcode 16.3.
+# language mode ("given: [5], supported: []") with Xcode 16.3. Newer toolchains
+# put every architecture's product in the same folder, so copy each one out as
+# soon as it is built.
+rm -rf build/arch
+mkdir -p build/arch
 for arch in arm64 x86_64; do
   swift build -c release --arch "$arch"
+  cp "$(swift build -c release --arch "$arch" --show-bin-path)/MyBar" "build/arch/MyBar-$arch"
 done
 
 rm -rf "$stage"
 mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources" "$out"
-lipo -create -output "$app/Contents/MacOS/MyBar" \
-  "$(swift build -c release --arch arm64 --show-bin-path)/MyBar" \
-  "$(swift build -c release --arch x86_64 --show-bin-path)/MyBar"
+lipo -create -output "$app/Contents/MacOS/MyBar" build/arch/MyBar-arm64 build/arch/MyBar-x86_64
 cp Resources/Info.plist "$app/Contents/Info.plist"
 cp Resources/AppIcon.icns "$app/Contents/Resources/AppIcon.icns"
 source scripts/signing.sh
