@@ -1,0 +1,15 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: [site/**, docs/**, '*.md']
+  pull_request:
+
+jobs:
+  test:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - run: swift test
+      - run: swift build -c release

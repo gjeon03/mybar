@@ -1,0 +1,32 @@
+MyBar — 설치 안내 / Installation
+================================
+
+MyBar는 메뉴바 아이템을 숨기고, 숨긴 아이템을 메뉴바 아래 바(Bar)에서 꺼내 쓰게 해 주는 앱입니다.
+MyBar hides menu bar items and shows them on demand in a bar below the menu bar.
+
+1. 설치 / Install
+   MyBar 아이콘을 옆의 Applications 폴더로 끌어다 놓고, Applications에서 여세요.
+   Drag MyBar onto the Applications folder, then open it from Applications.
+   (이 창에서 바로 실행하면 권한이 붙지 않습니다 / Don't run it from this window.)
+
+2. 권한 두 가지 / Two permissions
+   시스템 설정 → 개인정보 보호 및 보안에서 MyBar를 켜 주세요.
+   In System Settings › Privacy & Security, turn MyBar on under:
+   - 손쉬운 사용 / Accessibility
+   - 화면 및 시스템 오디오 녹음 / Screen & System Audio Recording
+   MyBar 설정 → Permissions 탭에서 두 항목이 모두 초록색이면 준비 완료입니다.
+
+   켰는데도 빨간색이면 Permissions 탭의 "Reset Permissions…"를 누르고 다시 허용하세요.
+   Still red after turning them on? Click "Reset Permissions…" there and allow them again.
+
+3. 사용법 / Use
+   - 설정 → Layout 탭에서 숨길 아이템을 Hidden / Always Hidden으로 끌어 놓으세요.
+     Drag items into Hidden or Always Hidden on the Layout tab.
+   - 메뉴바의 MyBar 아이콘을 클릭하면 숨긴 아이템이 아래 바에 나타나고, 클릭하면 열립니다.
+     Click MyBar's icon to see hidden items; click one to open it.
+
+4. 삭제 / Uninstall
+   MyBar를 종료하고 휴지통으로 옮기세요. 종료하면 숨겨 두었던 아이템이 모두 돌아옵니다.
+   Quit MyBar and move it to the Trash. Everything it hid comes back when it quits.
+
+https://mybar.gimbap.dev · https://github.com/gjeon03/mybar

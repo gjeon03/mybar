@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MyBar — 메뉴바는, 필요한 것만</title>
+  <meta name="description" content="MyBar는 macOS 메뉴바 아이템을 숨기고, 필요할 때 메뉴바 아래 바에서 꺼내 쓰게 해 주는 무료 오픈소스 앱입니다." />
+  <meta property="og:title" content="MyBar — 메뉴바는, 필요한 것만" />
+  <meta property="og:description" content="macOS 메뉴바 아이템을 숨기고, 필요할 때만 꺼내 쓰세요. 무료 · 오픈소스." />
+  <meta property="og:image" content="https://mybar.gimbap.dev/assets/icon.png" />
+  <meta property="og:url" content="https://mybar.gimbap.dev/" />
+  <meta name="theme-color" content="#0d0d0f" />
+  <link rel="icon" type="image/png" href="assets/favicon.png" />
+  <link rel="apple-touch-icon" href="assets/icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=JetBrains+Mono:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="main.js" defer></script>
+</head>
+<body>
+  <!-- SVG glyphs used by the menu bar mock-ups -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="g-wifi" viewBox="0 0 16 16"><path d="M1.5 6.2a9.5 9.5 0 0 1 13 0M3.8 8.6a6.2 6.2 0 0 1 8.4 0M6.1 11a2.9 2.9 0 0 1 3.8 0" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="13.2" r="1.1" fill="currentColor"/></symbol>
+      <symbol id="g-battery" viewBox="0 0 22 16"><rect x="1" y="4" width="17" height="8" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.2"/><rect x="2.8" y="5.8" width="10" height="4.4" rx="1" fill="currentColor"/><path d="M19.5 6.5v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></symbol>
+      <symbol id="g-sound" viewBox="0 0 16 16"><path d="M2 6h2.5L8 3v10L4.5 10H2z" fill="currentColor"/><path d="M10.5 5.5a3.5 3.5 0 0 1 0 5M12.5 3.5a6.3 6.3 0 0 1 0 9" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></symbol>
+      <symbol id="g-search" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m10.3 10.3 3.4 3.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+      <symbol id="g-cc" viewBox="0 0 16 16"><rect x="1.5" y="3" width="13" height="4" rx="2" fill="none" stroke="currentColor" stroke-width="1.2"/><circle cx="12.5" cy="5" r="1.2" fill="currentColor"/><rect x="1.5" y="9" width="13" height="4" rx="2" fill="none" stroke="currentColor" stroke-width="1.2"/><circle cx="3.5" cy="11" r="1.2" fill="currentColor"/></symbol>
+      <symbol id="g-cloud" viewBox="0 0 16 16"><path d="M4.5 12.5h7.3a2.7 2.7 0 0 0 .3-5.4 4 4 0 0 0-7.6-.8 3.1 3.1 0 0 0 0 6.2z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></symbol>
+      <symbol id="g-music" viewBox="0 0 16 16"><path d="M6 12V3.5l7-1.5v8.5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><circle cx="4.3" cy="12" r="1.8" fill="currentColor"/><circle cx="11.3" cy="10.5" r="1.8" fill="currentColor"/></symbol>
+      <symbol id="g-clip" viewBox="0 0 16 16"><rect x="3" y="2.8" width="10" height="11.5" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.3"/><rect x="5.6" y="1.5" width="4.8" height="2.6" rx="1" fill="currentColor"/><path d="M5.5 8h5M5.5 10.6h3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></symbol>
+      <symbol id="g-timer" viewBox="0 0 16 16"><circle cx="8" cy="9" r="5.3" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M8 9V6.2M6.3 1.8h3.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></symbol>
+      <symbol id="g-cat" viewBox="0 0 16 16"><path d="M2.5 12.5c0-3 1.8-5 4.5-5h3l1.4-2.6.6 2.8c1 .6 1.5 1.6 1.5 2.8v2" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/><path d="M4 12.5v1.5M7 12.5v1.5M10 12.5v1.5M13 12.5v1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></symbol>
+      <symbol id="g-drop" viewBox="0 0 16 16"><path d="M8 1.8s4.3 4.6 4.3 7.6a4.3 4.3 0 0 1-8.6 0C3.7 6.4 8 1.8 8 1.8z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></symbol>
+      <symbol id="g-bt" viewBox="0 0 16 16"><path d="m4.5 5 7 6-3.5 3V2l3.5 3-7 6" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></symbol>
+      <symbol id="g-display" viewBox="0 0 16 16"><rect x="1.5" y="2.5" width="13" height="8.5" rx="1.3" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M5.5 13.8h5M8 11v2.8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></symbol>
+      <symbol id="g-chev" viewBox="0 0 16 16"><path d="M10 3.5 5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="g-apple" viewBox="0 0 16 16"><path d="M11.2 8.5c0-1.6 1.3-2.4 1.4-2.4-.8-1.1-1.9-1.3-2.3-1.3-1-.1-1.9.6-2.4.6s-1.3-.6-2.1-.6c-1.1 0-2.1.6-2.6 1.6-1.1 2-.3 4.9.8 6.5.5.8 1.2 1.6 2 1.6s1.1-.5 2.1-.5 1.2.5 2.1.5 1.4-.8 1.9-1.6c.6-.9.8-1.7.8-1.8 0 0-1.7-.6-1.7-2.6zM9.6 3.6c.4-.5.7-1.2.6-1.9-.6 0-1.3.4-1.8.9-.4.4-.7 1.1-.6 1.8.7.1 1.3-.3 1.8-.8z" fill="currentColor"/></symbol>
+    </defs>
+  </svg>
+
+  <nav class="nav">
+    <a class="brand" href="#top"><img src="assets/favicon.png" alt="" width="20" height="20" /><span>MyBar</span></a>
+    <div class="nav-links">
+      <a href="#features" data-i18n="nav.features">기능</a>
+      <a href="#how" data-i18n="nav.how">동작 방식</a>
+      <a href="#install" data-i18n="nav.install">설치</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <div class="nav-right">
+      <button class="lang" type="button" data-lang-toggle aria-label="Language">EN</button>
+      <a class="icon-link" href="https://github.com/gjeon03/mybar" aria-label="GitHub">
+        <svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+      </a>
+      <a class="btn btn-sm btn-brand" href="#install" data-i18n="nav.download">다운로드</a>
+    </div>
+  </nav>
+
+  <main id="top">
+    <!-- Hero -->
+    <section class="hero wrap">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="eyebrow-brand">MyBar</span> / <span data-i18n="hero.eyebrow">macOS 메뉴바 정리</span></p>
+        <h1 class="hero-title" data-i18n-html="hero.title">메뉴바는,<br /><span class="accent">필요한 것만.</span></h1>
+        <p class="hero-sub" data-i18n-html="hero.sub">자주 안 쓰는 아이템은 숨겨 두고, 필요할 때 아이콘 하나로 꺼내 쓰세요.<br />누르면 원래 자리에서 그대로 열리고, 다 쓰면 다시 숨습니다.</p>
+        <div class="hero-actions">
+          <a class="btn btn-brand" data-download href="https://github.com/gjeon03/mybar/releases/latest">
+            <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><use href="#g-apple" /></svg>
+            <span data-i18n="hero.download">macOS 앱 다운로드</span>
+          </a>
+          <a class="btn btn-ghost" href="https://github.com/gjeon03/mybar">
+            <span data-i18n="hero.source">소스 보기</span>
+          </a>
+        </div>
+        <p class="hero-version" data-version-label></p>
+        <ul class="checks">
+          <li data-i18n="hero.c1">무료 · 오픈소스</li>
+          <li data-i18n="hero.c2">그룹 아이콘</li>
+          <li data-i18n="hero.c3">Wi‑Fi 등 시스템 아이템</li>
+        </ul>
+        <ul class="dots">
+          <li>macOS 27 · 26</li>
+          <li>Apple silicon / Intel</li>
+          <li>MIT</li>
+        </ul>
+      </div>
+
+      <div class="hero-visual" aria-hidden="true">
+        <div class="desk">
+          <div class="menubar">
+            <div class="mb-left">
+              <svg class="glyph apple"><use href="#g-apple" /></svg>
+              <b>Finder</b><span data-i18n="mock.file">파일</span>
+            </div>
+            <div class="mb-right">
+              <span class="hideable"><svg class="glyph"><use href="#g-cat" /></svg></span>
+              <span class="hideable"><svg class="glyph"><use href="#g-clip" /></svg></span>
+              <span class="hideable"><svg class="glyph"><use href="#g-timer" /></svg></span>
+              <span class="hideable"><svg class="glyph"><use href="#g-drop" /></svg></span>
+              <span class="hideable"><svg class="glyph"><use href="#g-cloud" /></svg></span>
+              <span class="anchor">
+                <span class="mybar-icon"><svg class="glyph"><use href="#g-chev" /></svg></span>
+                <span class="bar-panel">
+                  <span><svg class="glyph"><use href="#g-cat" /></svg></span>
+                  <span><svg class="glyph"><use href="#g-clip" /></svg></span>
+                  <span class="pressed"><svg class="glyph"><use href="#g-timer" /></svg></span>
+                  <span><svg class="glyph"><use href="#g-drop" /></svg></span>
+                  <span><svg class="glyph"><use href="#g-cloud" /></svg></span>
+                </span>
+                <span class="cursor"></span>
+              </span>
+              <svg class="glyph"><use href="#g-music" /></svg>
+              <svg class="glyph wide"><use href="#g-battery" /></svg>
+              <svg class="glyph"><use href="#g-wifi" /></svg>
+              <svg class="glyph"><use href="#g-cc" /></svg>
+              <span class="clock" data-i18n="mock.clock">오전 10:24</span>
+            </div>
+          </div>
+          <div class="window">
+            <div class="window-bar"><i></i><i></i><i></i></div>
+            <div class="window-body">
+              <span class="line w60"></span><span class="line w80"></span><span class="line w40"></span>
+              <span class="line w70"></span><span class="line w50"></span>
+            </div>
+          </div>
+          <div class="desk-caption">
+            <span class="cap cap-1" data-i18n="hero.cap1">메뉴바가 아이콘으로 가득</span>
+            <span class="cap cap-2" data-i18n="hero.cap2">MyBar가 정리하면</span>
+            <span class="cap cap-3" data-i18n="hero.cap3">아이콘을 눌러 꺼내 쓰기</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Why -->
+    <section class="section wrap" id="features">
+      <p class="kicker" data-i18n="why.kicker">왜 MyBar인가</p>
+      <h2 class="section-title" data-i18n="why.title">아이콘은 그대로, 메뉴바는 깔끔하게.</h2>
+      <p class="section-sub" data-i18n-html="why.sub">앱을 깔 때마다 메뉴바 아이콘이 하나씩 늘어납니다. 노치가 있는 MacBook에서는 넘치는 아이콘이 노치 뒤로 사라지기도 하죠.<br />MyBar는 <strong>지금 필요한 아이템만</strong> 메뉴바에 남기고, 나머지는 한 번의 클릭 거리에 둡니다.</p>
+
+      <div class="compare">
+        <div class="compare-row">
+          <span class="compare-label" data-i18n="why.before">Before</span>
+          <div class="mini-bar">
+            <svg class="glyph"><use href="#g-cat" /></svg><svg class="glyph"><use href="#g-clip" /></svg><svg class="glyph"><use href="#g-timer" /></svg><svg class="glyph"><use href="#g-drop" /></svg><svg class="glyph"><use href="#g-cloud" /></svg><svg class="glyph"><use href="#g-bt" /></svg><svg class="glyph"><use href="#g-display" /></svg><svg class="glyph"><use href="#g-sound" /></svg><svg class="glyph"><use href="#g-music" /></svg><svg class="glyph wide"><use href="#g-battery" /></svg><svg class="glyph"><use href="#g-wifi" /></svg><svg class="glyph"><use href="#g-search" /></svg><svg class="glyph"><use href="#g-cc" /></svg><span class="clock">오전 10:24</span>
+          </div>
+        </div>
+        <div class="compare-row">
+          <span class="compare-label accent" data-i18n="why.after">After</span>
+          <div class="mini-bar">
+            <svg class="glyph brand"><use href="#g-chev" /></svg><svg class="glyph"><use href="#g-music" /></svg><svg class="glyph wide"><use href="#g-battery" /></svg><svg class="glyph"><use href="#g-wifi" /></svg><svg class="glyph"><use href="#g-cc" /></svg><span class="clock">오전 10:24</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <article class="card">
+          <div class="card-visual">
+            <div class="sections">
+              <div class="sec"><em data-i18n="f1.v">Visible</em><span><svg class="glyph"><use href="#g-music" /></svg><svg class="glyph"><use href="#g-wifi" /></svg></span></div>
+              <div class="sec"><em data-i18n="f1.h">Hidden</em><span><svg class="glyph"><use href="#g-cat" /></svg><svg class="glyph"><use href="#g-clip" /></svg><svg class="glyph"><use href="#g-timer" /></svg></span></div>
+              <div class="sec dim"><em data-i18n="f1.a">Always Hidden</em><span><svg class="glyph"><use href="#g-bt" /></svg><svg class="glyph"><use href="#g-display" /></svg></span></div>
+            </div>
+          </div>
+          <h3 data-i18n="f1.title">세 구역으로 나누기</h3>
+          <p data-i18n-html="f1.body">설정의 Layout 탭에서 아이템을 <strong>Visible · Hidden · Always Hidden</strong>으로 끌어다 놓기만 하면 됩니다.</p>
+        </article>
+
+        <article class="card">
+          <div class="card-visual">
+            <div class="mini-panel">
+              <svg class="glyph"><use href="#g-cat" /></svg><svg class="glyph"><use href="#g-clip" /></svg><span class="pressed"><svg class="glyph"><use href="#g-timer" /></svg></span><svg class="glyph"><use href="#g-drop" /></svg>
+            </div>
+          </div>
+          <h3 data-i18n="f2.title">바에서 꺼내 쓰기</h3>
+          <p data-i18n-html="f2.body">MyBar 아이콘을 누르면 숨긴 아이템이 메뉴바 아래에 나타납니다. 하나를 누르면 <strong>원래 자리에서</strong> 열리고, 다 쓰면 다시 숨어요.</p>
+        </article>
+
+        <article class="card">
+          <div class="card-visual">
+            <div class="groups">
+              <span class="group-icon"><svg class="glyph"><use href="#g-music" /></svg></span>
+              <div class="group-items"><svg class="glyph"><use href="#g-sound" /></svg><svg class="glyph"><use href="#g-music" /></svg><svg class="glyph"><use href="#g-bt" /></svg></div>
+            </div>
+          </div>
+          <h3 data-i18n="f3.title">그룹</h3>
+          <p data-i18n-html="f3.body">관련된 아이템을 묶어 <strong>자기만의 메뉴바 아이콘</strong>을 줍니다. 누르면 그 그룹만 펼쳐집니다.</p>
+        </article>
+
+        <article class="card">
+          <div class="card-visual">
+            <div class="sys">
+              <span><svg class="glyph"><use href="#g-wifi" /></svg>Wi‑Fi</span>
+              <span><svg class="glyph"><use href="#g-sound" /></svg><i data-i18n="f4.sound">사운드</i></span>
+              <span><svg class="glyph wide"><use href="#g-battery" /></svg><i data-i18n="f4.battery">배터리</i></span>
+            </div>
+          </div>
+          <h3 data-i18n="f4.title">시스템 아이템까지</h3>
+          <p data-i18n-html="f4.body">macOS 27에서는 Wi‑Fi, 사운드, 배터리 같은 Apple 아이템도 앱처럼 숨길 수 있습니다. MyBar를 끄면 원래대로 돌아와요.</p>
+        </article>
+
+        <article class="card">
+          <div class="card-visual">
+            <div class="icon-grid">
+              <span class="on"><svg class="glyph"><use href="#g-chev" /></svg></span>
+              <span>⋯</span><span>☰</span><span>◎</span><span>✦</span><span>🍸</span>
+            </div>
+          </div>
+          <h3 data-i18n="f5.title">내 마음대로 아이콘</h3>
+          <p data-i18n-html="f5.body">기본 모양 12가지, 원하는 <strong>SF Symbol</strong>, 직접 고른 그림까지 MyBar 아이콘으로 쓸 수 있습니다.</p>
+        </article>
+
+        <article class="card">
+          <div class="card-visual">
+            <div class="kbd-row"><kbd>⌥</kbd><kbd>⌘</kbd><kbd>B</kbd></div>
+          </div>
+          <h3 data-i18n="f6.title">단축키 하나로</h3>
+          <p data-i18n-html="f6.body"><strong>⌥⌘B</strong>로 숨긴 아이템을 펼치고 접습니다. 로그인할 때 자동으로 실행할 수도 있어요.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- How -->
+    <section class="section wrap" id="how">
+      <p class="kicker" data-i18n="how.kicker">동작 방식</p>
+      <h2 class="section-title" data-i18n="how.title">macOS 27의 새 메뉴바에 맞춰.</h2>
+      <p class="section-sub" data-i18n-html="how.sub">macOS 27은 메뉴바를 새 시스템 프로세스가 통째로 그립니다. MyBar는 메뉴바의 <strong>허용 목록</strong>을 써서 숨길 앱을 메뉴바에서 빼고, 누를 때만 잠깐 허용합니다.</p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">1</span>
+          <div><h3 data-i18n="how.s1t">숨기기</h3><p data-i18n="how.s1">숨길 앱을 뺀 나머지만 메뉴바에 허용합니다. 빈칸도, 접힌 «도 남지 않습니다.</p></div>
+        </li>
+        <li>
+          <span class="step-n">2</span>
+          <div><h3 data-i18n="how.s2t">꺼내기</h3><p data-i18n="how.s2">바에서 누른 앱만 잠깐 허용하면 아이템이 제자리에 나타나고, MyBar가 대신 눌러 줍니다.</p></div>
+        </li>
+        <li>
+          <span class="step-n">3</span>
+          <div><h3 data-i18n="how.s3t">되돌리기</h3><p data-i18n="how.s3">메뉴가 닫히고 몇 초 지나면 다시 숨깁니다. MyBar가 종료되면 모든 아이템이 그대로 돌아옵니다.</p></div>
+        </li>
+      </ol>
+      <p class="note" data-i18n-html="how.note">macOS 26에서는 긴 구분선으로 아이템을 화면 밖으로 밀어내는 방식으로 동작합니다. 자세한 내용은 <a href="https://github.com/gjeon03/mybar/tree/main/docs">개발 문서</a>에 있어요.</p>
+    </section>
+
+    <!-- Install -->
+    <section class="section wrap" id="install">
+      <p class="kicker" data-i18n="install.kicker">설치</p>
+      <h2 class="section-title" data-i18n="install.title">1분이면 끝.</h2>
+      <div class="install">
+        <ol class="install-steps">
+          <li><span class="step-n">1</span><div><h3 data-i18n="install.s1t">다운로드</h3><p data-i18n-html="install.s1">DMG를 열고 MyBar를 <strong>Applications</strong> 폴더로 끌어다 놓은 뒤, Applications에서 여세요.</p></div></li>
+          <li><span class="step-n">2</span><div><h3 data-i18n="install.s2t">권한 두 가지</h3><p data-i18n-html="install.s2">시스템 설정 › 개인정보 보호 및 보안에서 <strong>손쉬운 사용</strong>과 <strong>화면 및 시스템 오디오 녹음</strong>을 켜 주세요.</p></div></li>
+          <li><span class="step-n">3</span><div><h3 data-i18n="install.s3t">정리</h3><p data-i18n="install.s3">설정의 Layout 탭에서 숨길 아이템을 Hidden으로 끌어다 놓으면 끝입니다.</p></div></li>
+        </ol>
+        <div class="install-card">
+          <img src="assets/icon.png" alt="MyBar" width="96" height="96" />
+          <p class="install-name">MyBar</p>
+          <p class="install-meta" data-version-label>macOS 27 · 26</p>
+          <a class="btn btn-brand" data-download href="https://github.com/gjeon03/mybar/releases/latest">
+            <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><use href="#g-apple" /></svg>
+            <span data-i18n="hero.download">macOS 앱 다운로드</span>
+          </a>
+          <a class="small-link" href="https://github.com/gjeon03/mybar/releases" data-i18n="install.all">모든 버전 보기</a>
+        </div>
+      </div>
+      <p class="note" data-i18n-html="install.tip">권한을 켰는데도 MyBar에서 빨간색으로 보이면 설정 › Permissions의 <strong>Reset Permissions…</strong>를 누르고 다시 허용하세요.</p>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section wrap" id="faq">
+      <p class="kicker">FAQ</p>
+      <h2 class="section-title" data-i18n="faq.title">자주 묻는 질문</h2>
+      <div class="faq">
+        <details><summary data-i18n="faq.q1">정말 무료인가요?</summary><p data-i18n="faq.a1">네. MIT 라이선스의 오픈소스이고, 광고나 유료 기능이 없습니다.</p></details>
+        <details><summary data-i18n="faq.q2">화면 기록 권한은 왜 필요한가요?</summary><p data-i18n="faq.a2">숨긴 아이템을 바에 보여 주려면 메뉴바 아이콘의 그림이 필요하기 때문입니다. 메뉴바 영역만 찍고, 어떤 데이터도 밖으로 보내지 않습니다. 코드는 전부 GitHub에 공개되어 있어요.</p></details>
+        <details><summary data-i18n="faq.q3">왜 App Store에 없나요?</summary><p data-i18n="faq.a3">App Store 앱은 샌드박스 안에서만 동작해서 다른 앱의 메뉴바 아이템을 다룰 수 없습니다. 대신 Apple 공증을 받은 DMG로 배포합니다.</p></details>
+        <details><summary data-i18n="faq.q4">macOS 업데이트 후 동작하지 않아요.</summary><p data-i18n-html="faq.a4">macOS 27의 메뉴바 기능 일부는 공개되지 않은 인터페이스라 업데이트로 바뀔 수 있습니다. <a href="https://github.com/gjeon03/mybar/issues">이슈</a>에 설정 › Permissions › Copy Diagnostics 결과를 붙여 알려 주세요.</p></details>
+        <details><summary data-i18n="faq.q5">MyBar를 지우면 숨긴 아이템은요?</summary><p data-i18n="faq.a5">MyBar를 종료하는 순간 숨긴 아이템이 모두 돌아옵니다. 그다음 휴지통으로 옮기면 됩니다.</p></details>
+        <details><summary data-i18n="faq.q6">한 앱의 아이템 여러 개를 따로 숨길 수 있나요?</summary><p data-i18n="faq.a6">macOS 27에서는 앱 단위로만 숨길 수 있습니다. 메뉴바가 앱 단위로 허용 여부를 정하기 때문이에요.</p></details>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer wrap">
+    <div class="footer-brand"><img src="assets/favicon.png" alt="" width="18" height="18" /> MyBar</div>
+    <p data-i18n-html="footer.text">MIT License · <a href="https://github.com/gjeon03/mybar">GitHub</a> · made by <a href="https://gimbap.dev">gimbap.dev</a></p>
+  </footer>
+</body>
+</html>
