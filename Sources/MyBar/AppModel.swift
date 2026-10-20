@@ -147,7 +147,8 @@ final class AppModel: ObservableObject {
     // Concealed items aren't drawn; picture them whenever they are.
     mover.pictureBeforeConcealing = { [weak self] key in
       guard let self, let item = await MenuBarScanner.scanAsync().item(for: key) else { return }
-      _ = await self.images.refreshFromScreen([item])
+      let settled = await Self.settled([item])
+      if !settled.isEmpty { _ = await self.images.refreshFromScreen(settled) }
     }
     if !concealer.isAvailable {
       lastError = "This version of macOS doesn't let MyBar hide menu bar items."
@@ -162,22 +163,27 @@ final class AppModel: ObservableObject {
       let stale = self.images.keysNeedingCapture(
         snapshot.items.filter { snapshot.section(of: $0) != .visible }.map(\.key))
       let chevron = await Task.detached { AgentScanner.chevron() }.value
-      var drawn = snapshot.items.filter { stale.contains($0.key) && !AgentLayout.isFolded($0.frame, chevron: chevron) }
-      if !drawn.isEmpty {
-        // Right after a launch the menu bar may still be bringing back the
-        // items an earlier MyBar concealed, and their reported frames lag
-        // behind: picture only items that have stayed put and don't overlap
-        // another one.
-        await sleep(milliseconds: 400)
-        let later = await MenuBarScanner.scanAsync()
-        drawn = drawn.filter { item in
-          later.item(for: item.key)?.frame == item.frame
-            && !later.items.contains { $0.key != item.key && $0.frame.intersects(item.frame) }
-        }
-      }
+      // Right after a launch the menu bar may still be bringing back the
+      // items an earlier MyBar concealed.
+      let drawn = await Self.settled(
+        snapshot.items.filter { stale.contains($0.key) && !AgentLayout.isFolded($0.frame, chevron: chevron) })
       if !drawn.isEmpty { _ = await self.images.refreshFromScreen(drawn) }
       await self.concealer.apply()
       await self.refresh()
+    }
+  }
+
+  /// Those of `items` that can be pictured from the screen now. While the
+  /// menu bar rearranges itself, the frames it reports lag behind where
+  /// items are drawn, and a picture taken by them catches a neighbour: keep
+  /// only items that stay put for a moment and don't overlap another one.
+  private static func settled(_ items: [MenuBarItem]) async -> [MenuBarItem] {
+    guard !items.isEmpty else { return [] }
+    await sleep(milliseconds: 400)
+    let later = await MenuBarScanner.scanAsync()
+    return items.filter { item in
+      later.item(for: item.key)?.frame == item.frame
+        && !later.items.contains { $0.key != item.key && $0.frame.intersects(item.frame) }
     }
   }
 
