@@ -72,6 +72,8 @@ final class AppModel: ObservableObject {
       guard let self else { return }
       if let key = self.panel.entry(at: point) {
         self.activate(key)
+      } else if MenuBarSystem.usesAgent, self.notificationCenter.isOnClock(point) {
+        self.notificationCenter.toggle()
       } else if MenuBarScanner.statusWindows().first(where: { $0.title == OwnItemName.control })?.frame.contains(point)
         == true
       {
@@ -121,6 +123,8 @@ final class AppModel: ObservableObject {
 
   /// On macOS 27+ items are concealed through MenuBarAgent (see `Concealer`).
   private(set) lazy var concealer = Concealer(concealed: settings.concealedApps)
+  /// Opens Notification Center from the clock, which the concealment blocks.
+  private lazy var notificationCenter = NotificationCenterBridge(concealer: concealer, curtain: curtain)
 
   /// Redraws MyBar's icon (after its picture was replaced).
   func refreshControlIcon() {
@@ -147,6 +151,8 @@ final class AppModel: ObservableObject {
     }
     if !concealer.isAvailable {
       lastError = "This version of macOS doesn't let MyBar hide menu bar items."
+    } else {
+      notificationCenter.start()
     }
     Task { [weak self] in
       guard let self else { return }
@@ -156,7 +162,19 @@ final class AppModel: ObservableObject {
       let stale = self.images.keysNeedingCapture(
         snapshot.items.filter { snapshot.section(of: $0) != .visible }.map(\.key))
       let chevron = await Task.detached { AgentScanner.chevron() }.value
-      let drawn = snapshot.items.filter { stale.contains($0.key) && !AgentLayout.isFolded($0.frame, chevron: chevron) }
+      var drawn = snapshot.items.filter { stale.contains($0.key) && !AgentLayout.isFolded($0.frame, chevron: chevron) }
+      if !drawn.isEmpty {
+        // Right after a launch the menu bar may still be bringing back the
+        // items an earlier MyBar concealed, and their reported frames lag
+        // behind: picture only items that have stayed put and don't overlap
+        // another one.
+        await sleep(milliseconds: 400)
+        let later = await MenuBarScanner.scanAsync()
+        drawn = drawn.filter { item in
+          later.item(for: item.key)?.frame == item.frame
+            && !later.items.contains { $0.key != item.key && $0.frame.intersects(item.frame) }
+        }
+      }
       if !drawn.isEmpty { _ = await self.images.refreshFromScreen(drawn) }
       await self.concealer.apply()
       await self.refresh()

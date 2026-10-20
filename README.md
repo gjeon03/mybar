@@ -118,6 +118,12 @@ permissions again after each update. Releasing and notarizing: [docs/releasing.m
   interfaces that a macOS update can change.
 - macOS 27: if MyBar is force-quit, hidden Apple items (Wi‑Fi etc.) stay hidden until MyBar runs
   again or you turn them back on in System Settings › Menu Bar.
+- macOS 27: while items are hidden, macOS ignores the clock, so MyBar opens Notification Center
+  for you when you click it. It briefly lets hidden items back under a picture of the menu bar,
+  so the screen recording indicator shows for a moment and the menu bar shifts slightly.
+  Swiping in from the right edge of the trackpad doesn't open Notification Center.
+- macOS 27: the input source and VPN items appear only on the active display's menu bar; this is
+  how macOS draws them, with or without MyBar.
 - macOS 26: on a display with a notch, macOS only draws (and lets anyone drag) items to the right of
   the notch. To reach an item behind or left of it, MyBar drops drawn items of the same
   section just left of it until it slides into reach, which takes about 0.2 s per

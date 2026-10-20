@@ -23,6 +23,7 @@ final class Concealer {
 
   private let assertion = AssessmentAssertion()
   private var lastAllowed: [String]?
+  private var isSuspended = false
   private var launchObservers: [NSObjectProtocol] = []
 
   /// The concealed apps as last applied, for the scanner (which runs off the
@@ -89,8 +90,23 @@ final class Concealer {
 
   var isRevealingAll: Bool { !revealAllSources.isEmpty }
 
+  /// Lifts the restriction altogether until `resume()`. Showing every app
+  /// isn't enough for some system features, such as opening Notification
+  /// Center, which stay off while any restriction is in force.
+  func suspend() {
+    isSuspended = true
+    assertion.invalidate()
+    lastAllowed = nil
+  }
+
+  func resume() async {
+    isSuspended = false
+    await apply()
+  }
+
   /// Tells MenuBarAgent the current allowed list, if it changed.
   func apply() async {
+    guard !isSuspended else { return }
     let running = NSWorkspace.shared.runningApplications.compactMap(\.bundleIdentifier)
     let allowed = Concealment.allowedBundles(
       running: running, concealed: concealed, revealed: revealed, revealAll: !revealAllSources.isEmpty)
@@ -103,6 +119,11 @@ final class Concealer {
     let ok = await assertion.activate(allowedBundles: allowed, systemItems: Concealment.allSystemItems)
     watch.lap(ok ? "applied" : "failed")
     if !ok { lastAllowed = nil }
+    // Suspended while the list was being applied.
+    if isSuspended {
+      assertion.invalidate()
+      lastAllowed = nil
+    }
   }
 }
 
@@ -189,6 +210,12 @@ private final class AssessmentAssertion {
 
   private static let initSelector = NSSelectorFromString("initWithAllowedSystemItems:allowedBundleIdentifiers:")
   private static let activateSelector = NSSelectorFromString("activateWithConfiguration:completionHandler:")
+
+  /// Lets the restriction go.
+  func invalidate() {
+    assertion?.perform(NSSelectorFromString("invalidate"))
+    assertion = nil
+  }
 
   /// Applies a new allowed list. Returns whether MenuBarAgent accepted it
   /// within a second.

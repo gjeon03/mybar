@@ -12,6 +12,14 @@ final class MenuBarCurtain {
   /// Whether more than one caller holds the cover up.
   var isHeldByOthers: Bool { depth > 1 }
 
+  /// Whether the cover is up (or on its way up).
+  var isRaised: Bool { depth > 0 }
+
+  /// Tells the cover it is still wanted, starting its time limit over.
+  func keepUp() {
+    if depth > 0 { startWatchdog() }
+  }
+
   /// A picture of one display's menu bar and where it goes.
   private struct Cover {
     let frame: NSRect
@@ -55,6 +63,22 @@ final class MenuBarCurtain {
       window.orderFrontRegardless()
     }
     startWatchdog()
+  }
+
+  /// Waits until the window server shows the cover: ordered front, it only
+  /// appears with a later screen refresh, and what it covers must not
+  /// change before then.
+  func waitUntilShown() async {
+    let ids = Set(windows.filter(\.isVisible).map { CGWindowID($0.windowNumber) })
+    guard !ids.isEmpty else { return }
+    for _ in 0..<10 {
+      let list = CGWindowListCopyWindowInfo([.optionOnScreenOnly], kCGNullWindowID) as? [[String: Any]] ?? []
+      let shown = list.compactMap { $0[kCGWindowNumber as String] as? CGWindowID }.filter(ids.contains)
+      if shown.count == ids.count { break }
+      await sleep(milliseconds: 10)
+    }
+    // Listed as on screen a frame or so before it is drawn.
+    await sleep(milliseconds: 34)
   }
 
   /// Captures every display's menu bar at once.
